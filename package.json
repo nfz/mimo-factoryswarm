@@ -1,0 +1,10 @@
+{
+  "name": "mimo-factoryswarm",
+  "version": "0.1.0",
+  "description": "A 1000-Agent Digital Twin for Manufacturing Line Simulation",
+  "author": "",
+  "scripts": {
+    "start": "python src/main.py",
+    "test": "pytest"
+  }
+}
