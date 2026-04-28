@@ -195,44 +195,133 @@ Every step is timestamped, traceable, and explainable.
 | CLI & Dashboard | Rich + Typer |
 | Async Runtime | asyncio |
 | Testing | pytest |
+| Development | 10 parallel Claude Code instances |
 
 ## Project Structure
 
+The project is organized as **10 independent Track directories**, each with its own `CLAUDE.md` configuration file. This allows up to 10 Claude Code instances to develop in parallel without interference.
+
 ```
 mimo-factoryswarm/
-├── src/                    # Core simulation engine
-│   ├── simulator.py        # Virtual clock & main loop
-│   ├── event_bus.py        # Global event bus (Pub/Sub)
-│   ├── events.py           # Pydantic event schemas
-│   ├── agent.py            # Base agent class
-│   ├── factory.py          # Factory environment singleton
-│   ├── station.py          # Workstation data structure & state machine
-│   ├── order.py            # BOM & routing definitions
-│   ├── metrics.py          # KPI calculation & data export
-│   └── main.py             # System entry point & UI
-├── agents/                 # Agent implementations
-│   ├── station_agent.py    # Workstation agent
-│   ├── line_supervisor_agent.py
-│   ├── warehouse_agent.py
-│   ├── logistics_agent.py
-│   ├── qc_agent.py
-│   ├── maintenance_agent.py
-│   ├── planner_agent.py
-│   └── manager_agent.py
-├── utils/                  # Shared utilities
-│   └── llm_client.py       # LLM API client with retry & rate limiting
-├── scenarios/              # Simulation configurations
-│   ├── baseline_factory.json
-│   ├── shortage_case.json
-│   └── machine_failure_case.json
-├── prompts/                # LLM prompt templates per role
-├── docs/                   # Architecture & design documents
-│   ├── task_allocation.md  # 10-track module definitions
-│   └── multi_agent_workflow.md  # Error-driven dev workflow
+├── shared/                          # Shared types and constants
+│   ├── models.py                    # Event, Topic, StationStatus, SimConfig
+│   └── __init__.py
+│
+├── track-01-core-engine/            # Virtual Clock & Event Bus
+│   ├── CLAUDE.md                    # ← Claude Code reads this
+│   ├── src/
+│   │   ├── simulator.py             # Tick-based main loop
+│   │   └── event_bus.py             # Pub/Sub event routing + DLQ
+│   └── tests/
+│
+├── track-02-agent-runtime/          # LLM Client & Base Agent
+│   ├── CLAUDE.md
+│   ├── src/
+│   │   ├── agent.py                 # BaseAgent abstract class
+│   │   └── llm_client.py            # API client with retry + token tracking
+│   ├── prompts/                     # Per-role system prompts
+│   └── tests/
+│
+├── track-03-physical-twin/          # State Machines & Hard Constraints
+│   ├── CLAUDE.md
+│   ├── src/
+│   │   ├── factory.py               # Factory singleton
+│   │   ├── station.py               # Workstation + state machine
+│   │   ├── order.py                 # BOM & routing
+│   │   └── exceptions.py            # StateTransitionError, etc.
+│   └── tests/
+│
+├── track-04-production/             # Station & Line Supervisor Agents
+│   ├── CLAUDE.md
+│   ├── src/
+│   │   ├── station_agent.py
+│   │   └── line_supervisor_agent.py
+│   └── tests/
+│
+├── track-05-logistics/              # Warehouse & AGV Agents
+│   ├── CLAUDE.md
+│   ├── src/
+│   │   ├── warehouse_agent.py
+│   │   └── logistics_agent.py
+│   └── tests/
+│
+├── track-06-quality-maintenance/    # QC & Maintenance Agents
+│   ├── CLAUDE.md
+│   ├── src/
+│   │   ├── qc_agent.py
+│   │   └── maintenance_agent.py
+│   └── tests/
+│
+├── track-07-planning/               # Factory Manager & Planner Agents
+│   ├── CLAUDE.md
+│   ├── src/
+│   │   ├── manager_agent.py
+│   │   └── planner_agent.py
+│   └── tests/
+│
+├── track-08-metrics/                # KPI Collection & Analytics
+│   ├── CLAUDE.md
+│   ├── src/
+│   │   ├── metrics.py               # MetricsCollector
+│   │   └── reporter.py              # Report generation
+│   └── tests/
+│
+├── track-09-scenarios/              # Simulation Scenario Configs
+│   ├── CLAUDE.md
+│   ├── src/
+│   │   ├── loader.py                # ScenarioLoader
+│   │   └── models.py                # Pydantic config models
+│   ├── scenarios/                   # JSON scenario files
+│   │   ├── baseline_factory.json
+│   │   ├── shortage_case.json
+│   │   ├── machine_failure_case.json
+│   │   ├── urgent_order_case.json
+│   │   └── cascade_failure_case.json
+│   └── tests/
+│
+├── track-10-dashboard/              # CLI Terminal Dashboard
+│   ├── CLAUDE.md
+│   ├── src/
+│   │   ├── main.py                  # System entry point
+│   │   ├── dashboard.py             # Rich Live rendering
+│   │   └── controls.py              # Keyboard interaction
+│   └── tests/
+│
+├── integrator/                      # Collision Testing & Auto-Fix
+│   ├── CLAUDE.md
+│   └── test_integration.py          # Cross-track import & interface tests
+│
+├── docs/                            # Architecture & design documents
+│   ├── task_allocation.md           # Product-level module definitions
+│   └── multi_agent_workflow.md      # Error-driven dev workflow
+│
 ├── .gitignore
 ├── package.json
-└── requirements.txt
+├── requirements.txt
+└── README.md
 ```
+
+### How to Develop with 10 Claude Code Instances
+
+Each Track directory contains a `CLAUDE.md` file that serves as the complete development brief for that module. To develop in parallel:
+
+```bash
+# Terminal 1
+cd track-01-core-engine && claude
+
+# Terminal 2
+cd track-02-agent-runtime && claude
+
+# ... and so on for all 10 tracks
+```
+
+Each Claude Code instance will read its `CLAUDE.md` and independently implement the module. After all tracks are complete, run the integrator to detect and auto-fix interface collisions:
+
+```bash
+python integrator/test_integration.py
+```
+
+This workflow is called **Error-Driven Swarm Intelligence** — agents develop blind, collide, and auto-align through LLM-powered code repair.
 
 ## Getting Started
 
